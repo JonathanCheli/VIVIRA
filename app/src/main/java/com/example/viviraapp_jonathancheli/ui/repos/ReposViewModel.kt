@@ -1,28 +1,38 @@
 package com.example.viviraapp_jonathancheli.ui.repos
 
 
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.switchMap
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import androidx.paging.cachedIn
 import com.example.viviraapp_jonathancheli.data.GitHubSearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 @HiltViewModel
 class ReposViewModel @Inject constructor (
     private val repository: GitHubSearchRepository
 ) : ViewModel() {
+    private val stream = Channel<String>(Channel.UNLIMITED)
 
-    private val currentQuery = MutableLiveData(DEFAULT_QUERY)
+    init {
+        stream.trySend(DEFAULT_QUERY)
+    }
 
-    val repos = currentQuery.switchMap { queryString ->
+
+
+    val repos = stream.receiveAsFlow().debounce(500).map {
+        if(it.isEmpty()) DEFAULT_QUERY else it }
+        .distinctUntilChanged()
+        .asLiveData()
+        .switchMap { queryString ->
         repository.getSearchResults(queryString).cachedIn(viewModelScope)
     }
 
     fun searchRepos(query: String) {
-        currentQuery.value = query
+        if(query.isNotEmpty())
+        stream.trySend(query)
     }
 
     companion object {

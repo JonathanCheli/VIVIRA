@@ -11,7 +11,7 @@ Minimum SDK level 23.
 
 Coroutines. 
 
-GLide. 
+Glide. 
 
 OkHttp3. 
 

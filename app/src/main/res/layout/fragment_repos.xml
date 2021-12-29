@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
-    tools:context=".ui.repos.ReposFragment">
+    tools:context=".ui.repos.ReposFragment"
+    tools:ignore="Overdraw">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"

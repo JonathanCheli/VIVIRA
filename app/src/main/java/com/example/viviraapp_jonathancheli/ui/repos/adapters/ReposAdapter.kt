@@ -1,6 +1,8 @@
 package com.example.viviraapp_jonathancheli.ui.repos.adapters
 
+
 import android.graphics.Typeface
+import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.StyleSpan
@@ -8,9 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.ViewCompat
-import androidx.navigation.Navigation
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -18,7 +18,6 @@ import com.bumptech.glide.Glide
 import com.example.viviraapp_jonathancheli.R
 import com.example.viviraapp_jonathancheli.data.model.Repo
 import com.example.viviraapp_jonathancheli.databinding.ItemTrendingRepoBinding
-import com.example.viviraapp_jonathancheli.ui.repos.ReposFragmentDirections
 
 
 class ReposAdapter: PagingDataAdapter<Repo, ReposAdapter.ViewHolder>(REPO_COMPARATOR) {
@@ -49,11 +48,9 @@ class ReposAdapter: PagingDataAdapter<Repo, ReposAdapter.ViewHolder>(REPO_COMPAR
 
     private fun createOnClickListener(binding : ItemTrendingRepoBinding, repo: Repo): View.OnClickListener {
         return View.OnClickListener {
-
-            val directions = ReposFragmentDirections.actionReposToDetails(repo)
-
-            val extras = FragmentNavigatorExtras(binding.avatar to "avatar_${repo.id}")
-            it.findNavController().navigate(directions, extras)
+            it.findNavController().navigate(R.id.actionReposToDetails,Bundle().apply {
+                putParcelable("KEY", repo)
+            })
 
         }
     }

@@ -9,10 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.navArgs
 import androidx.transition.TransitionInflater
 import com.bumptech.glide.Glide
 import com.example.viviraapp_jonathancheli.R
+import com.example.viviraapp_jonathancheli.data.model.Repo
 import com.example.viviraapp_jonathancheli.databinding.FragmentDetailsBinding
 import com.example.viviraapp_jonathancheli.internal.DateUtils
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,9 +24,6 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
 
     private var _binding: FragmentDetailsBinding? = null
     private val binding get() = _binding!!
-
-
-    private val args: DetailsFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,34 +38,37 @@ class DetailsFragment : Fragment(R.layout.fragment_details) {
 
         _binding = FragmentDetailsBinding.bind(view)
 
+        val repo = arguments?.getParcelable<Repo>("KEY")
+
+
         binding.apply {
-            name.text = args.repo.name
-            username.text = args.repo.owner.login
-            language.text = args.repo.language
-            description.text = args.repo.description
+            name.text = repo!!.name
+            username.text = repo.owner.login
+            language.text = repo.language
+            description.text = repo.description
 
             avatar.apply {
-                transitionName = args.repo.owner.avatar_url
+                transitionName = repo.owner.avatar_url
                 Glide.with(view)
-                    .load(args.repo.owner.avatar_url)
+                    .load(repo.owner.avatar_url)
                     .error(android.R.drawable.stat_notify_error)
                     .into(this)
             }
 
-            stars.text = args.repo.stars.toString()
-            forks.text = args.repo.forks.toString()
-            watchers.text = args.repo.watchers.toString()
-            issuesOpened.text = args.repo.openIssues.toString()
-            createDate.text = DateUtils.formatDate(args.repo.createDate)
-            updateDate.text = DateUtils.formatDate(args.repo.updateDate)
+            stars.text = repo.stars.toString()
+            forks.text = repo.forks.toString()
+            watchers.text = repo.watchers.toString()
+            issuesOpened.text = repo.openIssues.toString()
+            createDate.text = DateUtils.formatDate(repo.createDate)
+            updateDate.text = DateUtils.formatDate(repo.updateDate)
             btnBrowse.setOnClickListener {
-                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(args.repo.url))
+                val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(repo.url))
                 startActivity(browserIntent)
             }
 
         }
 
-        ViewCompat.setTransitionName(binding.avatar, "avatar_${args.repo.id}")
+      //  ViewCompat.setTransitionName(binding.avatar, "avatar_${repo!!.id}")
 
         setHasOptionsMenu(true)
     }

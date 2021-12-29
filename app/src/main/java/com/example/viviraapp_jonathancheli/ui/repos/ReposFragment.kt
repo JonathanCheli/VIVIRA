@@ -1,25 +1,27 @@
 package com.example.viviraapp_jonathancheli.ui.repos
 
-import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.View
 import android.widget.AdapterView.OnItemClickListener
-import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.SearchAutoComplete
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
 import androidx.paging.LoadState
 import com.example.viviraapp_jonathancheli.R
-import com.example.viviraapp_jonathancheli.data.model.Languages
 import com.example.viviraapp_jonathancheli.databinding.FragmentReposBinding
 import com.example.viviraapp_jonathancheli.ui.repos.adapters.ReposAdapter
 import com.example.viviraapp_jonathancheli.ui.repos.adapters.ReposLoadStateAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.FlowPreview
 import java.util.*
 
 
@@ -31,10 +33,6 @@ class ReposFragment : Fragment(R.layout.fragment_repos) {
     private var _binding: FragmentReposBinding? = null
     private val binding get() = _binding!!
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -66,10 +64,8 @@ class ReposFragment : Fragment(R.layout.fragment_repos) {
             }
         }
 
-        viewModel.repos.observe(viewLifecycleOwner) {
-            adapter.submitData(viewLifecycleOwner.lifecycle,it)
-
-
+        viewModel.repos.observe(viewLifecycleOwner) { data->
+            data.let { adapter.submitData(viewLifecycleOwner.lifecycle, it) }
         }
 
         adapter.addLoadStateListener { loadState ->
@@ -90,6 +86,8 @@ class ReposFragment : Fragment(R.layout.fragment_repos) {
                     emptyTv.isVisible = false
                 }
             }
+
+
         }
 
         setHasOptionsMenu(true)
@@ -104,28 +102,34 @@ class ReposFragment : Fragment(R.layout.fragment_repos) {
         val searchView = searchItem.actionView as SearchView
         val searchAutoComplete: SearchAutoComplete = searchView.findViewById(R.id.search_src_text)
 
-        // Get SearchView autocomplete object
-        searchAutoComplete.setTextColor(Color.WHITE)
-        searchAutoComplete.setDropDownBackgroundResource(R.color.colorPrimary)
+        searchAutoComplete.addTextChangedListener(object: TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun afterTextChanged(editable: Editable?) {
+                editable?.let {
+                    viewModel.searchRepos(it.toString())
 
-        val newsAdapter: ArrayAdapter<String> = ArrayAdapter(
-            this.requireContext(),
-            R.layout.dropdown_item,
-            Languages.data
-        )
-        searchAutoComplete.setAdapter(newsAdapter)
+                }
+            }
+        })
 
         // Listen to search view item on click event
-        searchAutoComplete.onItemClickListener =
-            OnItemClickListener { adapterView, _, itemIndex, _ ->
-                val queryString = adapterView.getItemAtPosition(itemIndex) as String
-                searchAutoComplete.setText(String.format(getString(R.string.search_query), queryString))
-                binding.recycler.scrollToPosition(0)
-                val languageQuery = String.format(getString(R.string.query), queryString)
-                viewModel.searchRepos(languageQuery)
-                searchView.clearFocus()
-                (activity as AppCompatActivity).supportActionBar?.title = queryString.capitalize(Locale.ROOT)
+        searchAutoComplete.onItemClickListener = OnItemClickListener { adapterView, _, itemIndex, _ ->
+            val queryString = adapterView.getItemAtPosition(itemIndex) as String
+            searchAutoComplete.setText(String.format(getString(R.string.search_query), queryString))
+
+            binding.recycler.scrollToPosition(0)
+
+            val languageQuery = String.format(getString(R.string.query), queryString)
+
+            viewModel.searchRepos(languageQuery)
+            searchView.clearFocus()
+            (activity as AppCompatActivity).supportActionBar?.title = queryString.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(
+                    Locale.ROOT
+                ) else it.toString()
             }
+        }
     }
 
     override fun onDestroyView() {
@@ -133,3 +137,4 @@ class ReposFragment : Fragment(R.layout.fragment_repos) {
         _binding = null
     }
 }
+
