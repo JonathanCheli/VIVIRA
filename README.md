@@ -1,5 +1,6 @@
 # VIVIRA
-Searching App
+Searching App that searches the most popular github repositories.
+
 # Technologies. 
 Kotlin. 
 
